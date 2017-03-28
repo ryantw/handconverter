@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -18,22 +20,41 @@ public class CashGame {
     private Date start, end;
     private String filePath;
     private String fileName;
+    private float smallBlind;
+    private float bigBlind;
     private StringBuilder dirtyFile;
     private ArrayList<PokerHand> hands;
-
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
     public CashGame(String filePath){
         this.filePath = filePath;
-        setFileName();
+        parseFileName();
+        parseTableInfo();
     }
 
-    public void setFileName(){
+    public void parseFileName(){
         if(filePath.length() > 0){
             fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
         } else {
             fileName = "";
         }
+    }
+
+    public void parseTableInfo(){
+        this.tableId = parseTableId();
+        parseBlinds();
+    }
+
+    // Extract table ID from filename
+    public String parseTableId(){
+        String tablePattern = "(.*)TBL No.(\\d+)(.*)";
+        return this.fileName.replaceAll(tablePattern, "$2");
+    }
+
+    public void parseBlinds(){
+        String blindPattern = "(.*)\\$(\\d+\\.\\d+)-\\$(\\d+\\.\\d+)(.*)";
+        this.smallBlind = new Float(this.fileName.replaceAll(blindPattern, "$2"));
+        this.bigBlind = new Float(this.fileName.replaceAll(blindPattern, "$3"));
     }
 
     /**
@@ -64,6 +85,8 @@ public class CashGame {
     public String getFileName(){
         return this.fileName;
     }
+
+    public String getTableId() { return this.tableId; }
 
     public String getFilePath(){
         return this.filePath;
