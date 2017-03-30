@@ -6,9 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -17,13 +14,12 @@ import java.util.stream.Stream;
 public class CashGame {
     private String tableId;
     private String gameType;
-    private Date start, end;
     private String filePath;
     private String fileName;
     private float smallBlind;
     private float bigBlind;
     private StringBuilder dirtyFile;
-    private ArrayList<PokerHand> hands;
+    private ArrayList<PokerHand> hands = new ArrayList<PokerHand>();
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
     public CashGame(String filePath){
@@ -76,10 +72,18 @@ public class CashGame {
 
     public void processDirtyFile(){
         String[] rawHands = dirtyFile.toString().split("\\n\\n");
-        /*
         for(String hand: rawHands){
-            hands.add(new PokerHand(hand));
-        }*/
+            hands.add(new PokerHand(hand.trim(), this));
+        }
+        //System.out.println(hands.size());
+    }
+
+    public void printSessionHandIds(){
+        int count = 1;
+        for(PokerHand hand: this.hands){
+            System.out.println("Hand #" + count + " -> " + hand.getHandId() + ":" + hand.getDateTime());
+            count++;
+        }
     }
 
     public String getFileName(){
