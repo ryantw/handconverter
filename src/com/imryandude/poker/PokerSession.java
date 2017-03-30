@@ -22,9 +22,7 @@ public class PokerSession {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println(session.getFileName());
-            System.out.println(session.getTableId());
-            //System.out.println(session.getDirtyFile());
+            session.printSessionHandIds();
         }
 
     }
