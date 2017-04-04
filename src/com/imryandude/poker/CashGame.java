@@ -16,10 +16,12 @@ public class CashGame {
     private String gameType;
     private String filePath;
     private String fileName;
+    private int maxSeatNumbers;
     private float smallBlind;
     private float bigBlind;
     private StringBuilder dirtyFile;
     private ArrayList<PokerHand> hands = new ArrayList<PokerHand>();
+    private ArrayList<CashGameSeat> seats = new ArrayList<CashGameSeat>();
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
     public CashGame(String filePath){
@@ -29,16 +31,17 @@ public class CashGame {
     }
 
     public void parseFileName(){
-        if(filePath.length() > 0){
-            fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+        if(this.filePath.length() > 0){
+            this.fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
         } else {
-            fileName = "";
+            this.fileName = "";
         }
     }
 
     public void parseTableInfo(){
         this.tableId = parseTableId();
         parseBlinds();
+        this.maxSeatNumbers = setMaxSeatNumbers();
     }
 
     // Extract table ID from filename
@@ -84,6 +87,25 @@ public class CashGame {
             System.out.println("Hand #" + count + " -> " + hand.getHandId() + ":" + hand.getDateTime());
             count++;
         }
+    }
+
+    /**
+     * Determine the total number of seats in session
+     * @return number of seats
+     */
+    public int setMaxSeatNumbers(){
+        int maxNumber = 0;
+        if(this.hands.size() > 0) {
+            for (PokerHand hand : this.hands) {
+                if (hand.getNumberOfPlayers() > maxNumber)
+                    maxNumber = hand.getNumberOfPlayers();
+            }
+        }
+        return maxNumber;
+    }
+
+    public int getMaxSeatNumbers(){
+        return this.maxSeatNumbers;
     }
 
     public String getFileName(){

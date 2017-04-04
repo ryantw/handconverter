@@ -1,5 +1,6 @@
 package com.imryandude.poker;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -25,6 +26,7 @@ public class PokerHand {
     public void parseHandHistory(){
         this.handId = parseHandHeader();
         this.dateTime = parseDateTime();
+        this.numberOfPlayers = parseMaxPlayers();
     }
 
     public String parseHandHeader(){
@@ -34,11 +36,24 @@ public class PokerHand {
 
     public String parseDateTime(){
         String[] hand = handToArray();
-        return hand[0].replaceAll("(.*)(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})$", "$2");
+        return hand[0].replaceAll("^Ignition Hand (.*)(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})$", "$2");
+    }
+
+    public int parseMaxPlayers(){
+        String[] hand = handToArray();
+        int maxPeople = 0;
+        for(String line: hand){
+            if(line.startsWith("Seat"))
+                maxPeople++;
+            if(line.startsWith("*** HOLE CARDS ***"))
+                break;
+        }
+        return maxPeople;
     }
 
     public String[] handToArray(){ return this.dirtyHandHistory.split(System.lineSeparator()); }
     public String getHandId(){ return this.handId; }
     public String getDateTime(){ return this.dateTime; }
+    public int getNumberOfPlayers(){ return this.numberOfPlayers; }
     public String getDirtyHandHistory(){ return this.dirtyHandHistory; }
 }
