@@ -21,27 +21,31 @@ public class CashGame {
     private float bigBlind;
     private StringBuilder dirtyFile;
     private ArrayList<PokerHand> hands = new ArrayList<PokerHand>();
-    private ArrayList<CashGameSeat> seats = new ArrayList<CashGameSeat>();
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
     public CashGame(String filePath){
         this.filePath = filePath;
-        parseFileName();
-        parseTableInfo();
-    }
-
-    public void parseFileName(){
-        if(this.filePath.length() > 0){
-            this.fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
-        } else {
-            this.fileName = "";
+        if(this.filePath.length() > 0) {
+            parseFileName();
+            parseTableInfo();
         }
     }
 
+    public void parseFileName(){
+        this.fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+    }
+
     public void parseTableInfo(){
-        this.tableId = parseTableId();
-        parseBlinds();
-        this.maxSeatNumbers = setMaxSeatNumbers();
+        try {
+            readDirtyFile();
+            this.tableId = parseTableId();
+            this.smallBlind = parseSmallBlind();
+            this.bigBlind = parseBigBlind();
+            this.maxSeatNumbers = setMaxSeatNumbers();
+            this.gameType = determineGameType(this.maxSeatNumbers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Extract table ID from filename
@@ -50,12 +54,15 @@ public class CashGame {
         return this.fileName.replaceAll(tablePattern, "$2");
     }
 
-    public void parseBlinds(){
+    public float parseSmallBlind(){
         String blindPattern = "(.*)\\$(\\d+\\.\\d+)-\\$(\\d+\\.\\d+)(.*)";
-        this.smallBlind = new Float(this.fileName.replaceAll(blindPattern, "$2"));
-        this.bigBlind = new Float(this.fileName.replaceAll(blindPattern, "$3"));
+        return new Float(this.fileName.replaceAll(blindPattern, "$2"));
     }
 
+    public float parseBigBlind(){
+        String blindPattern = "(.*)\\$(\\d+\\.\\d+)-\\$(\\d+\\.\\d+)(.*)";
+        return new Float(this.fileName.replaceAll(blindPattern, "$3"));
+    }
     /**
      * reads in a file of poker hands that needs
      * to be converted
@@ -69,16 +76,11 @@ public class CashGame {
         }
 
         if(dirtyFile.length() > 0){
-            processDirtyFile();
+            String[] rawHands = dirtyFile.toString().split("\\n\\n");
+            for(String hand: rawHands){
+                hands.add(new PokerHand(hand.trim(), this));
+            }
         }
-    }
-
-    public void processDirtyFile(){
-        String[] rawHands = dirtyFile.toString().split("\\n\\n");
-        for(String hand: rawHands){
-            hands.add(new PokerHand(hand.trim(), this));
-        }
-        //System.out.println(hands.size());
     }
 
     public void printSessionHandIds(){
@@ -95,8 +97,9 @@ public class CashGame {
      */
     public int setMaxSeatNumbers(){
         int maxNumber = 0;
-        if(this.hands.size() > 0) {
+        if(!hands.isEmpty()) {
             for (PokerHand hand : this.hands) {
+
                 if (hand.getNumberOfPlayers() > maxNumber)
                     maxNumber = hand.getNumberOfPlayers();
             }
@@ -104,20 +107,27 @@ public class CashGame {
         return maxNumber;
     }
 
-    public int getMaxSeatNumbers(){
-        return this.maxSeatNumbers;
+    public String determineGameType(int maxSeats){
+        if(maxSeats == 2){
+            return "Heads-Up";
+        } else if (maxSeats > 2 && maxSeats < 7){
+            return "6-MAX";
+        } else if(maxSeats >= 7 && maxSeats <= 9){
+            return "9-MAX";
+        }
+
+        return "GAME TYPE ERROR";
     }
 
+    public int getMaxSeatNumbers() { return this.maxSeatNumbers; }
+    public String getGameType() { return this.gameType; }
     public String getFileName(){
         return this.fileName;
     }
-
     public String getTableId() { return this.tableId; }
-
     public String getFilePath(){
         return this.filePath;
     }
-
     public String getDirtyFile(){
         return this.dirtyFile.toString();
     }

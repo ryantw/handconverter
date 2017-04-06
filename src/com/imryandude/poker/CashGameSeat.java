@@ -7,11 +7,14 @@ public class CashGameSeat {
     private int seatNumber;
     private String userName;
     private float userMoney;
+    boolean dealer = false;
+    boolean isNewPlayer = false;
 
     public CashGameSeat(int seatNumber, String userName, float userMoney){
         this.seatNumber = seatNumber;
         this.userName = userName;
         this.userMoney = userMoney;
+        this.isNewPlayer = true;
     }
 
     public int getSeatNumber() {

@@ -51,6 +51,8 @@ public class PokerHand {
         return maxPeople;
     }
 
+
+
     public String[] handToArray(){ return this.dirtyHandHistory.split(System.lineSeparator()); }
     public String getHandId(){ return this.handId; }
     public String getDateTime(){ return this.dateTime; }
