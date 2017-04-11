@@ -21,6 +21,7 @@ public class CashGame {
     private float bigBlind;
     private StringBuilder dirtyFile;
     private ArrayList<PokerHand> hands = new ArrayList<PokerHand>();
+    private PlayerManager playerManager = PlayerManager.getInstance();
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
     public CashGame(String filePath){
