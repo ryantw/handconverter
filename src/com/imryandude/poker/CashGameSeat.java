@@ -4,9 +4,11 @@ package com.imryandude.poker;
  * Created by ryan on 4/4/17.
  */
 public class CashGameSeat {
+    private int handNumber;
     private int seatNumber;
     private String userName;
     private float userMoney;
+    boolean isHero = false;
     boolean dealer = false;
     boolean isNewPlayer = false;
 
