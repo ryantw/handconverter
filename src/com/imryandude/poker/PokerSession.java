@@ -18,8 +18,6 @@ public class PokerSession {
             // Loop through directory and new instance of Cash Game
             CashGame session = new CashGame("resources/HH20170324-213135 - 5219195 - RING - $0.10-$0.25 - HOLDEM - NL - TBL No.11464775.txt");
             //session.printSessionHandIds();
-            System.out.println(session.getMaxSeatNumbers());
-            System.out.println(session.getGameType());
         }
 
     }
