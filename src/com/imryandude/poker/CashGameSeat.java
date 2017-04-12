@@ -4,6 +4,7 @@ import java.util.Random;
 
 /**
  * Created by ryan on 4/4/17.
+ *
  */
 public class CashGameSeat {
     private String handNumber;
