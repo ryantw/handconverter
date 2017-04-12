@@ -9,22 +9,17 @@ import java.util.Date;
 public class PokerHand {
     private String dirtyHandHistory;
     private String[] players;
-    StringBuilder handSetup = new StringBuilder();
-    StringBuilder preFlop = new StringBuilder();
-    StringBuilder summary = new StringBuilder();
-    StringBuilder flop = null;
-    StringBuilder turn = null;
-    StringBuilder river = null;
+    private StringBuilder handSetup = new StringBuilder();
+    private StringBuilder preFlop = new StringBuilder();
+    private StringBuilder summary = new StringBuilder();
+    private StringBuilder flop = null;
+    private StringBuilder turn = null;
+    private StringBuilder river = null;
     private String handId;
     private String dateTime;
-    private Date startTime;
-    private String limitType;
     private CashGame session;
     private static PlayerManager playerManager;
     private int numberOfPlayers;
-    private String[] board;
-    private float potSize;
-    private float potRake;
 
     /**
      * Deconstruct hand
@@ -59,17 +54,11 @@ public class PokerHand {
     @SuppressWarnings("Duplicates")
     public void deconstructHand(){
         String[] hand = handToArray();
-
-        boolean skipToSummary = false;
-
         int gameSetupMarker = 0;
         int preFlopMarker = 0;
         int flopMarker = 0;
         int turnMarker = 0;
         int riverMarker = 0;
-        int summaryMarker = 0;
-
-        // Always game setup, hole cards and summary
 
         // Game Setup Markers = 0 ~ gameSetupMarker (maybe -1)
         // Pre Flop Markers = gameSetUpMarker ~ preFlopMarker
@@ -94,15 +83,15 @@ public class PokerHand {
 
         // Get Summary
         for(int i = riverMarker; i < hand.length; i++)
-            summary.append(hand[i]);
+            summary.append(hand[i] + System.lineSeparator());
 
         // Always a Hand Setup
         for (int i = 1; i < gameSetupMarker; i++)
-            handSetup.append(hand[i]);
+            handSetup.append(hand[i] + System.lineSeparator());
 
         // Always hole card dealt, hand can be won
         for (int i = gameSetupMarker; i < preFlopMarker; i++) {
-            preFlop.append(hand[i]);
+            preFlop.append(hand[i] + System.lineSeparator());
         }
 
         // We have a flop
@@ -111,11 +100,11 @@ public class PokerHand {
             // If we have flop, do we have turn?
             if(flopMarker != 0){
                 for(int i = preFlopMarker; i < flopMarker; i++)
-                    flop.append(hand[i]);
+                    flop.append(hand[i] + System.lineSeparator());
             } else {
                 // Won on flop gather until summary
                 for(int i = preFlopMarker; i < riverMarker; i++)
-                    flop.append(hand[i]);
+                    flop.append(hand[i] + System.lineSeparator());
             }
         }
 
@@ -124,20 +113,21 @@ public class PokerHand {
             // If we have turn, do we have river?
             if(turnMarker != 0){
                 for(int i = flopMarker; i < turnMarker; i++)
-                    turn.append(hand[i]);
+                    turn.append(hand[i] + System.lineSeparator());
             } else {
                 // Won on turn, gather summary
                 for(int i = flopMarker; i < riverMarker; i++)
-                    turn.append(hand[i]);
+                    turn.append(hand[i] + System.lineSeparator());
             }
         }
 
         if(turnMarker != 0){
             river = new StringBuilder();
             for(int i = turnMarker; i < riverMarker; i++)
-                river.append(hand[i]);
+                river.append(hand[i] + System.lineSeparator());
         }
 
+        /*
         StringBuilder results = new StringBuilder();
 
         if(flop != null)
@@ -151,6 +141,7 @@ public class PokerHand {
 
 
         System.out.println(results.toString());
+        */
     }
 
     public void parseHandHistory(){
@@ -176,27 +167,21 @@ public class PokerHand {
     }
 
     public int parseMaxPlayers(){
-        String[] hand = handToArray();
+        String[] hand = handToArray(this.handSetup);
         int maxPeople = 0;
         for(String line: hand){
-            if(line.startsWith("Seat")) {
+            if(line.startsWith("Seat"))
                 maxPeople++;
-            }
-            if(line.startsWith("*** HOLE CARDS ***"))
-                break;
         }
         return maxPeople;
     }
 
     public void parsePlayers(){
         this.players = new String[getNumberOfPlayers()];
-        String[] hand = handToArray();
+        String[] hand = handToArray(this.handSetup);
         for(int i = 0; i < getNumberOfPlayers(); i++){
-            if(hand[i].startsWith("Seat")){
+            if(hand[i].startsWith("Seat"))
                 players[i] = hand[i];
-            }
-            if(hand[i].startsWith("*** HOLE CARDS ***"))
-                break;
         }
     }
 
@@ -209,8 +194,16 @@ public class PokerHand {
             // else just add these players again
         } else {
             // null so assume first hand
+            String[] currPlayers = handToArray(handSetup);
             for(int i = 0; i < getNumberOfPlayers(); i++){
+                boolean isHero = false;
+                String seatNumber = currPlayers[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim();
+                String currentPosition = currPlayers[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
+                String playerMoney = currPlayers[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").trim();
+                if(currPlayers[i].contains("[ME]"))
+                    isHero = true;
 
+                currentPlayers.add(new CashGameSeat(this.handId, Integer.parseInt(seatNumber), currentPosition, Float.parseFloat(playerMoney.replace("$","")), isHero, true));
             }
 
             playerManager.addPlayers(currentPlayers);
@@ -219,6 +212,7 @@ public class PokerHand {
 
 
     public String[] handToArray(){ return this.dirtyHandHistory.split(System.lineSeparator()); }
+    public String[] handToArray(StringBuilder hand){ return hand.toString().split(System.lineSeparator()); }
     public String getHandId(){ return this.handId; }
     public String getDateTime(){ return this.dateTime; }
     public int getNumberOfPlayers(){ return this.numberOfPlayers; }
