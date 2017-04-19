@@ -12,6 +12,7 @@ import java.util.stream.Stream;
  * Created by ryan on 3/27/17.
  */
 public class CashGame {
+    private int totalHands;
     private String tableId;
     private String gameType;
     private String filePath;
@@ -20,7 +21,7 @@ public class CashGame {
     private float smallBlind;
     private float bigBlind;
     private StringBuilder dirtyFile;
-    private ArrayList<PokerHand> hands = new ArrayList<PokerHand>();
+    private ArrayList<PokerHand> hands = new ArrayList<>();
     private PlayerManager playerManager = PlayerManager.getInstance();
     final static Charset ENCODING = StandardCharsets.UTF_8;
 
@@ -39,11 +40,12 @@ public class CashGame {
     public void parseTableInfo(){
         try {
             readDirtyFile();
+            this.maxSeatNumbers = determineMaxSeatNumbers();
             this.tableId = parseTableId();
             this.smallBlind = parseSmallBlind();
             this.bigBlind = parseBigBlind();
-            this.maxSeatNumbers = setMaxSeatNumbers();
             this.gameType = determineGameType(this.maxSeatNumbers);
+            createHands();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,11 +77,13 @@ public class CashGame {
             stream.forEach(s -> dirtyFile.append(s + System.lineSeparator()));
             //stream.forEach(dirtyFile::append);
         }
+    }
 
+    public void createHands(){
         if(dirtyFile.length() > 0){
             String[] rawHands = dirtyFile.toString().split("\\n\\n");
             for(String hand: rawHands){
-                hands.add(new PokerHand(hand.trim(), this));
+                hands.add(new PokerHand(hand.trim(), getMaxSeatNumbers(), this));
             }
         }
     }
@@ -96,16 +100,23 @@ public class CashGame {
      * Determine the total number of seats in session
      * @return number of seats
      */
-    public int setMaxSeatNumbers(){
-        int maxNumber = 0;
-        if(!hands.isEmpty()) {
-            for (PokerHand hand : this.hands) {
-
-                if (hand.getNumberOfPlayers() > maxNumber)
-                    maxNumber = hand.getNumberOfPlayers();
+    public int determineMaxSeatNumbers(){
+        int maxSeats = -1;
+        String[] rawHands = dirtyFile.toString().split(System.lineSeparator()+System.lineSeparator());
+        for(int i = 0; i < rawHands.length;i++){
+            int handSeats = 0;
+            String[] handLines = rawHands[i].split(System.lineSeparator());
+            for(String line: handLines){
+                if(line.matches("^Seat \\d{1}: .*$")) {
+                    handSeats++;
+                }
+                if(line.matches("^Dealer : .*$"))
+                    break;
             }
+            if(handSeats > maxSeats)
+                maxSeats = handSeats;
         }
-        return maxNumber;
+        return maxSeats;
     }
 
     public String determineGameType(int maxSeats){
@@ -118,6 +129,20 @@ public class CashGame {
         }
 
         return "GAME TYPE ERROR";
+    }
+
+    public void requestHandInfo(int handNumber){
+        CashGameSeat[] handPlayers = playerManager.getPlayers(handNumber);
+        PokerHand hand = hands.get(handNumber);
+
+        // Hand must exist if not null
+        if(handPlayers != null){
+            System.out.println("Players");
+            for(CashGameSeat player: handPlayers){
+                System.out.printf("(%s) %s, Seat %d ($%.2f)\n", player.getHandNumber(), player.getUserName(), player.getSeatNumber(), player.getUserMoney());
+            }
+            System.out.print(hand.getSummary());
+        }
     }
 
     public int getMaxSeatNumbers() { return this.maxSeatNumbers; }

@@ -9,7 +9,7 @@ import java.util.Random;
 public class CashGameSeat {
     private String handNumber;
     private int seatNumber;
-    private String userName;
+    private String userName = null;
     private String tablePosition;
     private float userMoney;
     boolean isHero = false;
@@ -31,8 +31,6 @@ public class CashGameSeat {
             this.userName = generateUserName();
         if(isHero)
             this.userName = "Hero";
-
-        System.out.println(userName);
     }
 
     private String generateUserName(){
@@ -77,4 +75,16 @@ public class CashGameSeat {
     public void setUserMoney(float userMoney) {
         this.userMoney = userMoney;
     }
+
+    public String getTablePosition() { return this.tablePosition; }
+
+    public void setTablePosition(String position){ this.tablePosition = position; }
+
+    public boolean getHero() { return this.isHero; }
+
+    public void setHero(boolean hero){ this.isHero = hero; }
+
+    public void setHandNumber(String handNumber) { this.handNumber = handNumber; }
+
+    public String getHandNumber(){ return this.handNumber; }
 }

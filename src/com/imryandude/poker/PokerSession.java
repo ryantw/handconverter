@@ -1,6 +1,5 @@
 package com.imryandude.poker;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -17,7 +16,7 @@ public class PokerSession {
         if(gameType.equals("cash")){
             // Loop through directory and new instance of Cash Game
             CashGame session = new CashGame("resources/HH20170324-213135 - 5219195 - RING - $0.10-$0.25 - HOLDEM - NL - TBL No.11464775.txt");
-            //session.printSessionHandIds();
+            session.requestHandInfo(0);
         }
 
     }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class PlayerManager {
     private static PlayerManager players;
-    private ArrayList<ArrayList<CashGameSeat>> playerHands = new ArrayList<ArrayList<CashGameSeat>>();
+    private ArrayList<CashGameSeat[]> playerHands = new ArrayList<>();
 
     private PlayerManager(){
         // Nadda
@@ -21,7 +21,7 @@ public class PlayerManager {
         return players;
     }
 
-    public ArrayList<CashGameSeat> getPreviousPlayers(){
+    public CashGameSeat[] getPreviousPlayers(){
         try {
             return playerHands.get(playerHands.size() - 1);
         } catch (IndexOutOfBoundsException e){
@@ -29,7 +29,7 @@ public class PlayerManager {
         }
     }
 
-    public ArrayList<CashGameSeat> getPreviousPlayers(int index){
+    public CashGameSeat[] getPreviousPlayers(int index){
         try {
             return playerHands.get(index - 1);
         } catch (IndexOutOfBoundsException e){
@@ -37,7 +37,7 @@ public class PlayerManager {
         }
     }
 
-    public ArrayList<CashGameSeat> getNextPlayers(int index){
+    public CashGameSeat[] getNextPlayers(int index){
         try {
             return playerHands.get(index + 1);
         } catch (IndexOutOfBoundsException e){
@@ -45,7 +45,15 @@ public class PlayerManager {
         }
     }
 
-    public void addPlayers(ArrayList<CashGameSeat> players){
+    public CashGameSeat[] getPlayers(int handNumber){
+        try {
+            return playerHands.get(handNumber);
+        } catch (IndexOutOfBoundsException e){
+            return null;
+        }
+    }
+
+    public void addPlayers(CashGameSeat[] players){
         playerHands.add(players);
     }
 
