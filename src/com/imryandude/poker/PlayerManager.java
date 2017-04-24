@@ -29,6 +29,17 @@ public class PlayerManager {
         }
     }
 
+    public int getNumberOfPreviousPlayers() {
+        int count = 0;
+        CashGameSeat[] previousPlayers = getPreviousPlayers();
+        for (CashGameSeat seat : previousPlayers) {
+            if (seat.getSeatNumber() > 0)
+                count++;
+        }
+
+        return count;
+    }
+
     public CashGameSeat[] getPreviousPlayers(int index){
         try {
             return playerHands.get(index - 1);

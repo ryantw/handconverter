@@ -81,7 +81,8 @@ public class CashGame {
 
     public void createHands(){
         if(dirtyFile.length() > 0){
-            String[] rawHands = dirtyFile.toString().split("\\n\\n");
+            String[] rawHands = dirtyFile.toString().split(System.lineSeparator()+System.lineSeparator());
+            System.out.println(rawHands.length);
             for(String hand: rawHands){
                 hands.add(new PokerHand(hand.trim(), getMaxSeatNumbers(), this));
             }

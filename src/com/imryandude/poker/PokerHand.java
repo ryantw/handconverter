@@ -21,6 +21,8 @@ public class PokerHand {
     private CashGame session;
     private static PlayerManager playerManager;
     private int numberOfPlayers;
+    private int maxSeatNumbers;
+    private int playerMap[];
 
     /**
      * Deconstruct hand
@@ -48,6 +50,8 @@ public class PokerHand {
         playerManager = playerManager.getInstance();
         this.session = session;
         seats = new CashGameSeat[maxSeatNumbers];
+        playerMap = new int[maxSeatNumbers];
+        this.maxSeatNumbers = maxSeatNumbers;
         this.dirtyHandHistory = handHistory;
         deconstructHand();
         parseHandHistory();
@@ -179,117 +183,60 @@ public class PokerHand {
     public void parsePlayers(){
         this.players = new String[session.getMaxSeatNumbers()];
         String[] hand = handToArray(this.handSetup);
+        System.out.println("#" + this.handId);
         for(int i = 0; i < players.length; i++){
             if(hand[i].matches("^(Seat \\d{1}:)(.*)$")) {
+                playerMap[i] = 1;
                 int seatNumber = Integer.parseInt(hand[i].replaceAll("^Seat (\\d{1}):(.*)$", "$1"));
                 players[seatNumber-1] = hand[i];
+            } else {
+                playerMap[i] = 0;
+                players[i] = null;
             }
+            System.out.println("Seat: " + (i+1) + " --> "  + playerMap[i]);
         }
+        System.out.println("------------------");
     }
+
 
     public void addPlayers(){
         CashGameSeat[] previousPlayers = playerManager.getPreviousPlayers();
+        CashGameSeat[] currentPlayers = new CashGameSeat[session.getMaxSeatNumbers()];
 
-        if(previousPlayers != null){
-            // We had a previous hand.
-            for(int i = 0; i < session.getMaxSeatNumbers(); i++){
-                if(players[i] != null && players[i].length() > 0){
+        // First hand
+        if(previousPlayers == null){
+            for(int i = 0; i < playerMap.length; i++){
+                // Player in the seat.
+                if(playerMap[i] > 0){
                     boolean isHero = false;
                     int seatNumber = Integer.parseInt(players[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim());
-                    String currentPosition = players[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
-                    String playerMoney = players[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").replace("$","").trim();
-                    if (players[i].contains("[ME]"))
+                    String tablePosition = players[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
+                    float playerMoney = Float.parseFloat(players[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").replace("$","").trim());
+                    if(players[i].contains("[ME"))
                         isHero = true;
-
-                    // seats[i] = players[i] // NPE = previousPlayer[i] == nulls
-                    if(seatNumber == previousPlayers[i].getSeatNumber()){
-                        seats[i].setHandNumber(this.handId);
-                        seats[i].setSeatNumber(seatNumber);
-                        seats[i].setUserMoney(Float.parseFloat(playerMoney.replace("$","")));
-                        seats[i].setTablePosition(currentPosition);
-                    }
+                    currentPlayers[i] = new CashGameSeat(this.handId, seatNumber, tablePosition, playerMoney, isHero);
                 } else {
-                    System.out.println("New Player? " + this.handId);
+                    currentPlayers[i] = new CashGameSeat();
                 }
             }
-            playerManager.addPlayers(seats);
         } else {
-            // First Hand.
-            for(int i = 0; i < session.getMaxSeatNumbers(); i++){
-                if(players[i] != null && players[i].length() > 0) {
-                    boolean isHero = false;
-                    String seatNumber = players[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim();
-                    String currentPosition = players[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
-                    String playerMoney = players[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").replace("$","").trim();
-                    if (players[i].contains("[ME]"))
-                        isHero = true;
-                    seats[i] = new CashGameSeat(this.handId, Integer.parseInt(seatNumber), currentPosition, Float.parseFloat(playerMoney), isHero, true);
-                }
-            } // end for
-            playerManager.addPlayers(seats);
-        }
+            // Not first hand
+            for(int i = 0; i < playerMap.length; i++){
+                if(!previousPlayers[i].isEmptySeat()){
+                    int seatNumber = Integer.parseInt(players[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim());
+                    String tablePosition = players[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
+                    float playerMoney = Float.parseFloat(players[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").replace("$","").trim());
 
-    }
-
-    /*
-    public void addPlayers(){
-        //Need to detect if a change happened before changing...
-        ArrayList<CashGameSeat> previousPlayers = playerManager.getPreviousPlayers();
-        ArrayList<CashGameSeat> currentPlayers = new ArrayList<>();
-
-        if(previousPlayers != null){
-            String[] currPlayers = this.players;
-
-            for(int i = 0; i < getNumberOfPlayers(); i++){
-                CashGameSeat currentPlayer = null;
-
-                try {
-                    currentPlayer = previousPlayers.get(i);
-                } catch  (IndexOutOfBoundsException e){
-                    // Sounds like a player left
-                    currentPlayer = new CashGameSeat(this.handId, i, "DUNNO", Float.parseFloat("25"), false, true);
-                    currentPlayers.add(i, currentPlayer);
-                }
-
-                boolean isHero = false;
-                int seatNumber = Integer.parseInt(currPlayers[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim());
-                String currentPosition = currPlayers[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
-                String playerMoney = currPlayers[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").trim();
-                if(currPlayers[i].contains("[ME]"))
-                    isHero = true;
-
-                if(seatNumber == currentPlayer.getSeatNumber()){
-                    if(currentPlayer.getUserName() != null){
-                        currentPlayer.setHandNumber(this.handId);
-                        currentPlayer.setSeatNumber(seatNumber);
-                        currentPlayer.setUserMoney(Float.parseFloat(playerMoney.replace("$","")));
-                        currentPlayer.setTablePosition(currentPosition);
+                } else {
+                    if(playerMap[i] > 1){
 
                     }
                 }
-                currentPlayers.add(currentPlayer);
             }
-            playerManager.addPlayers(currentPlayers);
-
-        } else {
-            // null so assume first hand
-            String[] currPlayers = this.players;
-            // Needs to be session.getMaxSeatNumbers
-            for(int i = 0; i < getNumberOfPlayers(); i++){
-                boolean isHero = false;
-                String seatNumber = currPlayers[i].replaceAll("^Seat (\\d{1})(.*)", "$1").trim();
-                String currentPosition = currPlayers[i].replaceAll("^(.*):(\\s+)(.*)(\\s+\\((.*))$", "$3").trim();
-                String playerMoney = currPlayers[i].replaceAll("(.*)\\((\\$\\d*\\.?\\d*)(.*)$", "$2").trim();
-                if(currPlayers[i].contains("[ME]"))
-                    isHero = true;
-
-                currentPlayers.add(new CashGameSeat(this.handId, Integer.parseInt(seatNumber), currentPosition, Float.parseFloat(playerMoney.replace("$","")), isHero, true));
-            }
-
-            playerManager.addPlayers(currentPlayers);
         }
+        playerManager.addPlayers(currentPlayers);
     }
-*/
+
 
     public String[] handToArray(){ return this.dirtyHandHistory.split(System.lineSeparator()); }
     public String[] handToArray(StringBuilder hand){ return hand.toString().split(System.lineSeparator()); }

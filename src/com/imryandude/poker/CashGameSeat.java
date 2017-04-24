@@ -8,28 +8,29 @@ import java.util.Random;
  */
 public class CashGameSeat {
     private String handNumber;
-    private int seatNumber;
+    private int seatNumber = 0;
     private String userName = null;
     private String tablePosition;
     private float userMoney;
     boolean isHero = false;
     boolean dealer = false;
-    boolean isNewPlayer = false;
+    boolean emptySeat = true;
     private static Random random = new Random();
     private static final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     public CashGameSeat(){
-
+        emptySeat = true;
     }
 
-    public CashGameSeat(String handNumber, int seatNumber, String tablePosition, float userMoney, boolean isHero, boolean isNew){
+    public CashGameSeat(String handNumber, int seatNumber, String tablePosition, float userMoney, boolean isHero){
         this.handNumber = handNumber;
         this.seatNumber = seatNumber;
         this.tablePosition = tablePosition;
         this.userMoney = userMoney;
-        if(isNew && !isHero)
+        this.emptySeat = false;
+        if(!isHero)
             this.userName = generateUserName();
-        if(isHero)
+        else
             this.userName = "Hero";
     }
 
@@ -87,4 +88,6 @@ public class CashGameSeat {
     public void setHandNumber(String handNumber) { this.handNumber = handNumber; }
 
     public String getHandNumber(){ return this.handNumber; }
+
+    public boolean isEmptySeat() { return this.emptySeat; }
 }
