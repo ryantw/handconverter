@@ -16,7 +16,8 @@ public class PokerSession {
         if(gameType.equals("cash")){
             // Loop through directory and new instance of Cash Game
             CashGame session = new CashGame("resources/HH20170324-213135 - 5219195 - RING - $0.10-$0.25 - HOLDEM - NL - TBL No.11464775.txt");
-            session.requestHandInfo(0);
+            for(int i = 0; i < 271; i++)
+                session.requestHandInfo(i);
         }
 
     }

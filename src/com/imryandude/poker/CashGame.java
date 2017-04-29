@@ -140,9 +140,9 @@ public class CashGame {
         if(handPlayers != null){
             System.out.println("Players");
             for(CashGameSeat player: handPlayers){
-                System.out.printf("(%s) %s, Seat %d ($%.2f)\n", player.getHandNumber(), player.getUserName(), player.getSeatNumber(), player.getUserMoney());
+                System.out.printf("(%s) [Seat %d]: %s ($%.2f)\n", player.getHandNumber(),  player.getSeatNumber(), player.getUserName(), player.getUserMoney());
             }
-            System.out.print(hand.getSummary());
+            //System.out.print(hand.getSummary());
         }
     }
 
